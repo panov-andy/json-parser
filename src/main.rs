@@ -5,18 +5,27 @@ fn main() {
     println!("{:?}", result);
 }
 
-type IResult<IN, OUT> = Result<(IN, OUT), String>;
+type IResult<In, Out> = Result<(In, Out), String>;
 
-trait Parser<IN, OUT> {
-    fn parse(&self, input: IN) -> IResult<IN, OUT>;
+trait Parser<In, Out> {
+    fn parse(&self, input: In) -> IResult<In, Out>;
 }
 
-fn begin(with: &str) -> impl Parser<&str, &str> {
-    move |input: &str| {
-        if input.starts_with(&with) {
-            return Ok((&input[..with.len()], &input[with.len()..]));
-        }
-        return Err("doesn't start with".to_string());
+impl<In, Out, F> Parser<In, Out> for F
+    where
+        F: Fn(In) -> IResult<In, Out>,
+{
+    fn parse(&self, input: In) -> IResult<In, Out> {
+        self(input)
     }
 }
 
+fn begin<'a>(with: &str) -> impl Parser<&'a str, &'a str> + '_ {
+    move |input: &'a str| {
+        if input.starts_with(with) {
+            Ok(input.split_at(with.len()))
+        } else {
+            Err("doesn't start with".to_string())
+        }
+    }
+}
