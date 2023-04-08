@@ -1,5 +1,5 @@
 fn main() {
-    let preved = begin("preved");
+    let preved = start_with("preved");
 
     let result = preved.parse("preved medved");
     println!("{:?}", result);
@@ -20,7 +20,7 @@ impl<In, Out, F> Parser<In, Out> for F
     }
 }
 
-fn begin<'a>(with: &str) -> impl Parser<&'a str, &'a str> + '_ {
+fn start_with<'a>(with: &str) -> impl Parser<&'a str, &'a str> + '_ {
     move |input: &'a str| {
         if input.starts_with(with) {
             Ok(input.split_at(with.len()))
