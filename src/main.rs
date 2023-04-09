@@ -15,15 +15,15 @@ trait Parser<In, Out> {
 }
 
 impl<In, Out, F> Parser<In, Out> for F
-    where
-        F: Fn(In) -> IResult<In, Out>,
+where
+    F: Fn(In) -> IResult<In, Out>,
 {
     fn parse(&self, input: In) -> IResult<In, Out> {
         self(input)
     }
 }
 
-fn start_with<'init, 'src>(with: &'init str) -> impl Parser<&'src str, &'src str> +'init {
+fn start_with<'init, 'src>(with: &'init str) -> impl Parser<&'src str, &'src str> + 'init {
     move |input: &'src str| {
         if input.starts_with(with) {
             Ok(input.split_at(with.len()))
@@ -33,7 +33,10 @@ fn start_with<'init, 'src>(with: &'init str) -> impl Parser<&'src str, &'src str
     }
 }
 
-fn or<'fun, 'src>(var1: &'fun dyn Parser<&'src str, &'src str>, var2: &'fun dyn Parser<&'src str, &'src str>) -> impl Parser<&'src str, &'src str>+'fun  {
+fn or<'fun, 'src>(
+    var1: &'fun dyn Parser<&'src str, &'src str>,
+    var2: &'fun dyn Parser<&'src str, &'src str>,
+) -> impl Parser<&'src str, &'src str> + 'fun {
     move |input: &'src str| {
         let result = var1.parse(input);
         if result.is_ok() {
