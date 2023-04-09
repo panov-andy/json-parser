@@ -23,8 +23,8 @@ impl<In, Out, F> Parser<In, Out> for F
     }
 }
 
-fn start_with<'a>(with: &str) -> impl Parser<&'a str, &'a str> + '_ {
-    move |input: &'a str| {
+fn start_with<'a:'b, 'b>(with: &'b str) -> impl Parser<&'b str, &'b str> + '_ {
+    move |input: &'b str| {
         if input.starts_with(with) {
             Ok(input.split_at(with.len()))
         } else {
@@ -33,7 +33,7 @@ fn start_with<'a>(with: &str) -> impl Parser<&'a str, &'a str> + '_ {
     }
 }
 
-fn or<'a>(var1: &'a dyn Parser<&'a str, &'a str>, var2: &'a dyn Parser<&'a str, &'a str>) -> impl Parser<&'a str, &'a str>  {
+fn or<'a:'b,'b>(var1: &'b dyn Parser<&'a str, &'a str>, var2: &'b dyn Parser<&'a str, &'a str>) -> impl Parser<&'a str, &'a str>+'b  {
     move |input: &'a str| {
         let result = var1.parse(input);
         if result.is_ok() {
