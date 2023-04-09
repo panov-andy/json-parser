@@ -1,7 +1,10 @@
 fn main() {
     let preved = start_with("preved");
+    let medved = start_with("medved");
 
-    let result = preved.parse("preved medved");
+    let orr = or(&preved, &medved);
+
+    let result = orr.parse("preved medved");
     println!("{:?}", result);
 }
 
@@ -27,5 +30,15 @@ fn start_with<'a>(with: &str) -> impl Parser<&'a str, &'a str> + '_ {
         } else {
             Err("doesn't start with".to_string())
         }
+    }
+}
+
+fn or<'a>(var1: &'a dyn Parser<&'a str, &'a str>, var2: &'a dyn Parser<&'a str, &'a str>) -> impl Parser<&'a str, &'a str>  {
+    move |input: &'a str| {
+        let result = var1.parse(input);
+        if result.is_ok() {
+            return result;
+        }
+        var2.parse(input)
     }
 }
