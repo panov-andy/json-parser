@@ -2,9 +2,16 @@ fn main() {
     let preved = start_with("preved");
     let medved = start_with("medved");
 
+    let ab = start_with("ab");
+
     let orr = or(&preved, &medved);
 
+    let ab_or_preved = or(&ab, &orr);
+
     let result = orr.parse("preved medved");
+    println!("{:?}", result);
+
+    let result = ab_or_preved.parse("preved ab");
     println!("{:?}", result);
 }
 
