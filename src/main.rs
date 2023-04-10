@@ -19,7 +19,7 @@ fn start_with<'init, 'src>(with: &'init str) -> impl Parser<&'src str, &'src str
     }
 }
 
-fn any_parser<In, Out>(parsers: Vec<dyn Parser<In, Out>>) -> impl Parser<In, Out> {
+fn any_parser<In: Clone, Out>(parsers: Vec<dyn Parser<In, Out>>) -> impl Parser<In, Out> {
     move |input: In| {
         for parser in parsers {
             let res = parser.parse(input.clone());
