@@ -1,11 +1,10 @@
 fn main() {
-    let combinator = start_with("preved")
-        .or(start_with("medved"));
+    let preved =  start_with("preved");
+    let medved =  start_with("medved");
 
-    let result = combinator.parse("preved medved");
-    println!("{:?}", result);
+    let any = any_parser(vec![preved, medved]);
 
-    let result = combinator.parse("medved privet");
+    let result = any.parse("preved medved");
     println!("{:?}", result);
 }
 
@@ -17,6 +16,18 @@ fn start_with<'init, 'src>(with: &'init str) -> impl Parser<&'src str, &'src str
         } else {
             Err("doesn't start with".to_string())
         }
+    }
+}
+
+fn any_parser<In, Out>(parsers: Vec<dyn Parser<In, Out>>) -> impl Parser<In, Out> {
+    move |input: In| {
+        for parser in parsers {
+            let res = parser.parse(input.clone());
+            if res.is_ok() {
+                return res;
+            }
+        }
+        Err("no parsers matched")
     }
 }
 
