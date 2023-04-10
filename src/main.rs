@@ -2,7 +2,7 @@ fn main() {
     let preved =  start_with("preved");
     let medved =  start_with("medved");
 
-    let any = any_parser(vec![preved, medved]);
+    let any = any_parser(vec![Box::new(preved), Box::new(medved)]);
 
     let result = any.parse("preved medved");
     println!("{:?}", result);
@@ -19,15 +19,15 @@ fn start_with<'init, 'src>(with: &'init str) -> impl Parser<&'src str, &'src str
     }
 }
 
-fn any_parser<In: Clone, Out>(parsers: Vec<dyn Parser<In, Out>>) -> impl Parser<In, Out> {
+fn any_parser<In: Clone, Out>(parsers: Vec<Box<dyn Parser<In, Out>>>) -> impl Parser<In, Out> {
     move |input: In| {
-        for parser in parsers {
+        for parser in &parsers {
             let res = parser.parse(input.clone());
             if res.is_ok() {
                 return res;
             }
         }
-        Err("no parsers matched")
+        Err("no parsers matched".to_string())
     }
 }
 
