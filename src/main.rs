@@ -1,34 +1,14 @@
 fn main() {
-    let preved = start_with("preved");
-    let medved = start_with("medved");
+    let combinator = start_with("preved")
+        .or(start_with("medved"));
 
-    let ab = start_with("ab");
-
-    let orr = or(&preved, &medved);
-
-    let ab_or_preved = or(&ab, &orr);
-
-    let result = orr.parse("preved medved");
+    let result = combinator.parse("preved medved");
     println!("{:?}", result);
 
-    let result = ab_or_preved.parse("preved ab");
+    let result = combinator.parse("medved privet");
     println!("{:?}", result);
 }
 
-type IResult<In, Out> = Result<(In, Out), String>;
-
-trait Parser<In, Out> {
-    fn parse(&self, input: In) -> IResult<In, Out>;
-}
-
-impl<In, Out, F> Parser<In, Out> for F
-where
-    F: Fn(In) -> IResult<In, Out>,
-{
-    fn parse(&self, input: In) -> IResult<In, Out> {
-        self(input)
-    }
-}
 
 fn start_with<'init, 'src>(with: &'init str) -> impl Parser<&'src str, &'src str> + 'init {
     move |input: &'src str| {
@@ -40,15 +20,40 @@ fn start_with<'init, 'src>(with: &'init str) -> impl Parser<&'src str, &'src str
     }
 }
 
-fn or<'fun, 'src>(
-    var1: &'fun dyn Parser<&'src str, &'src str>,
-    var2: &'fun dyn Parser<&'src str, &'src str>,
-) -> impl Parser<&'src str, &'src str> + 'fun {
-    move |input: &'src str| {
-        let result = var1.parse(input);
-        if result.is_ok() {
-            return result;
+type IResult<In, Out> = Result<(In, Out), String>;
+
+trait Parser<In, Out> {
+    fn parse(&self, input: In) -> IResult<In, Out>;
+    fn or<P>(self, or_parser: P) -> Or<Self, P>
+        where
+            P: Parser<In, Out>,
+            Self: Sized,
+    {
+        return Or { first: self, second: or_parser };
+    }
+}
+
+impl<In, Out, F> Parser<In, Out> for F
+    where
+        F: Fn(In) -> IResult<In, Out>,
+{
+    fn parse(&self, input: In) -> IResult<In, Out> {
+        self(input)
+    }
+}
+
+struct Or<Parser1, Parser2> {
+    first: Parser1,
+    second: Parser2,
+}
+
+impl<In: Clone, Out, ParserType> Parser<In, Out> for Or<ParserType, ParserType>
+    where ParserType: Parser<In, Out>
+{
+    fn parse(&self, input: In) -> IResult<In, Out> {
+        match self.first.parse(input.clone()) {
+            Err(_) => self.second.parse(input),
+            res => res,
         }
-        var2.parse(input)
     }
 }
