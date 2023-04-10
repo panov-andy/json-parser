@@ -27,7 +27,7 @@ trait Parser<In, Out> {
     fn or<P>(self, or_parser: P) -> Or<Self, P>
         where
             P: Parser<In, Out>,
-            Self: Sized,
+            Self: Sized, //todo unclear why it's required here
     {
         return Or { first: self, second: or_parser };
     }
@@ -47,6 +47,7 @@ struct Or<Parser1, Parser2> {
     second: Parser2,
 }
 
+//todo no way to avoid Clone? worth to check if &str really clones
 impl<In: Clone, Out, ParserType> Parser<In, Out> for Or<ParserType, ParserType>
     where ParserType: Parser<In, Out>
 {
