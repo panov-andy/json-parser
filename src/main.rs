@@ -58,7 +58,6 @@ struct Or<Parser1, Parser2> {
     second: Parser2,
 }
 
-//todo no way to avoid Clone? worth to check if &str really clones
 impl<In: Clone, Out, ParserType> Parser<In, Out> for Or<ParserType, ParserType>
     where ParserType: Parser<In, Out>
 {
